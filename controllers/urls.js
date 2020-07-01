@@ -1,17 +1,17 @@
 const models = require('../models');
 const shortid = require('shortid');
-const { model } = require('mongoose');
+
 
 exports.shorten = (req,res) => {
     const longUrl = req.body.url;
-    const urlCode = shortid.generate()
-    const shortUrl = 'localhost:3000/' + urlCode;
-    models.Url.findOne({ longUrl : longUrl}, (err, url) =>{
+    models.Url.findOne({
+        longUrl : longUrl
+    }).then(url => {
         if(url) {
             console.log('Url found in db');
             
             models.Counter.findOne({
-                
+                _id: url._id
             }).then(urlData => {
                 urlData.visited_time.push(new Date());
                 console.log(urlData);
@@ -26,10 +26,12 @@ exports.shorten = (req,res) => {
                     }
                 })           
                 const statistics = {
+                    "Short Url" : url.shortUrl,
                     "Created_at" : url.createdAt,
                     "Total_Visits" : urlData.visited_time.length,
                     "VisitsInPreviousHour" : count
                 }
+                
                 return res.json(statistics)
             });
             
@@ -37,6 +39,9 @@ exports.shorten = (req,res) => {
 
         } else {
             console.log('Url NOT found in db. Saving new Url');
+            
+            const urlCode = shortid.generate()
+            const shortUrl = 'localhost:3000/' + urlCode;
             const newUrl = new models.Url({
                 urlCode,
                 longUrl,
@@ -57,9 +62,16 @@ exports.shorten = (req,res) => {
                     
                 });
             })
-            return res.json(shortUrl);  
+            return res.json({"Short Url":shortUrl});  
         }
+
     })
+
+
+
+
+
+
     
     
 }
