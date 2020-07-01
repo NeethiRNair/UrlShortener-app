@@ -9,15 +9,13 @@ exports.shorten = (req,res) => {
     }).then(url => {
         if(url) {
             console.log('Url found in db');
-            
             models.Counter.findOne({
                 _id: url._id
             }).then(urlData => {
                 urlData.visited_time.push(new Date());
-                console.log(urlData);
                 urlData.save();
-
-                var ONE_HOUR = 60 * 60 * 1000; /* ms */
+                
+                var ONE_HOUR = 60 * 60 * 1000; 
                 const now = new Date;
                 var count = 0;
                 urlData.visited_time.find(time => {
@@ -39,7 +37,6 @@ exports.shorten = (req,res) => {
 
         } else {
             console.log('Url NOT found in db. Saving new Url');
-            
             const urlCode = shortid.generate()
             const shortUrl = 'localhost:3000/' + urlCode;
             const newUrl = new models.Url({
@@ -49,17 +46,14 @@ exports.shorten = (req,res) => {
             });
             
             newUrl.save().then( url => {
-                console.log(url._id)
                 models.Counter.find({
                     _id: url._id
                 }).then(urlData => {
                     const newCount = new models.Counter({
                         _id: url._id,
                         visited_time: new Date()
-                    })
-                    console.log(newCount);
+                    })  
                     newCount.save()
-                    
                 });
             })
             return res.json({"Short Url":shortUrl});  
